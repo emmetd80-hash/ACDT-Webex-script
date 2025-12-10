@@ -1,12 +1,13 @@
 # Importing libraries
 import requests
 import time
+import traceback
 import numpy as np
 import matplotlib.pyplot as plt
 from io import BytesIO
 
 # API Keys
-WEBEX_TOKEN = "Bearer N2UyZjVkMGItMDI3MC00OTUzLWI2YTUtNTM1N2NjMjA0ZGEwMzY4NjY3MzktM2Rk_PE93_d68b3fe9-4c07-4dad-8882-3b3fd6afb92d"
+WEBEX_TOKEN = "Bearer NTU3NDVlMzctYWIzMS00ODBiLWFhMDctZDQxMzU5Zjc1NmQyZDI2Nzk2OGYtZGQw_PE93_d68b3fe9-4c07-4dad-8882-3b3fd6afb92d"
 TARGET_ROOM = "ACDT_CW1"
 OPENWEATHER_API_KEY = "f37ffd63612c870014f4630800229f76"
 NEWSAPI_KEY = "aa118f5e9ef5427aaadf35055383d845"
@@ -29,9 +30,9 @@ def post_to_webex(message):
 
 
 # Sending graphs to Webex
-def post_image_to_webex(graph, filename="plot.png"):
+def post_image_to_webex(image_buf, filename="plot.png"):
     headers = {"Authorization": WEBEX_TOKEN}
-    files = {"files": (filename, graph, "image/png")}
+    files = {"files": (filename, image_buf, "image/png")}
     data = {"roomId": roomIdToGetMessages}
     r = requests.post("https://webexapis.com/v1/messages", headers=headers, data=data, files=files)
     log(f"POST image → Webex [{r.status_code}]")
@@ -123,7 +124,6 @@ def get_exchange_rate(currency_code):
 def get_latest_news(country, max_articles=3):
     try:
         url = f"https://newsapi.org/v2/top-headlines?q={country}&apiKey={NEWSAPI_KEY}"
-        # Waiting for response from the API
         resp = requests.get(url, timeout=10)
         if resp.status_code != 200:
             return f"\n⚠️ News info not available (status {resp.status_code})."
@@ -131,7 +131,6 @@ def get_latest_news(country, max_articles=3):
         if not articles:
             return "\n⚠️ No news articles found."
         news_text = "\n📰 **Latest News:**\n"
-        # Looping through each news article
         for i, article in enumerate(articles, start=1):
             title = article.get("title", "No title")
             url = article.get("url", "")
@@ -141,25 +140,25 @@ def get_latest_news(country, max_articles=3):
         return f"\n⚠️ Could not fetch news: {e}"
 
 
-# Getting historical population data and plotting graph
-def generate_country_graph(country):
+def generate_country_graph(country_info):
     try:
+        country = country_info["country_name"]
         url = f"https://api.api-ninjas.com/v1/population?country={country}"
         headers = {'X-Api-Key': POP_API_KEY}
         resp = requests.get(url, headers=headers, timeout=10)
+
         if resp.status_code != 200:
-            log(f"⚠️ Failed to fetch historical population: {resp.status_code}")
-            return None
+            return f"⚠️ Failed to fetch historical population data for {country}. Status code: {resp.status_code}"
+
         raw_data = resp.json()
+
         if 'historical_population' not in raw_data:
-            log("⚠️ 'historical_population' key not found")
-            return None, f"⚠️ No historical population data found for {country}."
+            return f"⚠️ No historical population data found for {country}."
 
         # Filter years from 2005 onwards
         data = [entry for entry in raw_data['historical_population'] if entry['year'] >= 2005]
         if not data:
-            log("⚠️ No population data from 2005 onwards")
-            return None, f"⚠️ No population data from 2005 onwards found for {country}."
+            return f"⚠️ No population data from 2005 onwards for {country}."
 
         years = [entry['year'] for entry in data]
         populations = [entry['population'] for entry in data]
@@ -196,11 +195,12 @@ def generate_country_graph(country):
         plt.savefig(buf, format='png')
         plt.close()
         buf.seek(0)
-        return buf, None
+
+        return buf
 
     except Exception as e:
-        log(f"⚠️ Could not generate plot: {e}")
-        return None, f"⚠️ Could not generate population plot: {e}"
+        return f"⚠️ Could not generate plot for {country}: {e}"
+
 
 
 # Connecting to Webex room
@@ -297,15 +297,18 @@ while True:
         post_to_webex(message_text)
 
         # Generating graph and ensuring it's sent last
-        graph, graph_error = generate_country_graph(country)
-        if graph_error:
-            post_to_webex(graph_error)
-        elif graph:
-            post_image_to_webex(graph)
+        plot_buf = generate_country_graph(country_info)
+
+        # If the function returned an error message instead of an image buffer
+        if isinstance(plot_buf, str):
+            post_to_webex(plot_buf)
+        else:
+            post_image_to_webex(plot_buf)
 
         log(f"✅ Info for {country_info['country_name']} posted to Webex.\n")
 
     # If error send back to webex
     except Exception as e:
         log("⚠️ Exception caught:")
+        traceback.print_exc()
         post_to_webex(f"❌ Unable to fetch data.\nError: {e}")
