@@ -80,3 +80,14 @@ When a user types /Country, the bot returns:
     A population graph is generated using Matplotlib and sent as an image.
     
     All errors (bad input, missing data, failed API responses) return user-friendly messages.
+
+🔑 API Keys Needed
+
+API	                Purpose	            Documentation
+Webex Bot Token	    Posting messages	https://developer.webex.com/docs/api
+
+OpenWeather         API	Weather data    https://openweathermap.org/api
+
+NewsAPI	            News headlines	    https://newsapi.org
+
+API Ninjas	        Population data	    https://api-ninjas.com/api
