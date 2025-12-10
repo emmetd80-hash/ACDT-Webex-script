@@ -1,8 +1,26 @@
-# ACDT-Webex-script
-Listens to messages in a Webex space an returns data from public APIs
+ACDT Webex Country Info Bot 🌍
 
-Enter a country into the ACT_CW1 space and it will return data from 4 public APIs
+A Python bot that listens to messages in a Webex space and returns live country information using multiple public APIs.
+Simply type a message in the format:
+/CountryName
 
-e.g: /South Korea
+Example:
+/South Korea
 
-<img width="416" height="645" alt="image" src="https://github.com/user-attachments/assets/681ab947-1a4d-4a48-b3ea-b4c7c9a4b065" />
+The bot retrieves data from 4 different APIs and responds automatically in the Webex space.
+
+🚀 Features
+
+When a user types /Country, the bot returns:
+
+1️⃣ Country Information (RestCountries API)
+
+    Official country name
+
+    Capital city
+
+    Population
+
+    Region
+
+    Currency code
