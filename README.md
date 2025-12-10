@@ -5,7 +5,7 @@ Simply type a message in the format:
 /CountryName
 
 Example:
-/South Korea
+"/South Korea"
 
 The bot retrieves data from 4 different APIs and responds automatically in the Webex space.
 
@@ -83,11 +83,69 @@ When a user types /Country, the bot returns:
 
 🔑 API Keys Needed
 
-API	                Purpose	            Documentation
-Webex Bot Token	    Posting messages	https://developer.webex.com/docs/api
+    API	                Purpose	            Documentation
+    Webex Bot Token	    Posting messages	https://developer.webex.com/docs/api
+    
+    OpenWeather         API	Weather data    https://openweathermap.org/api
+    
+    NewsAPI	            News headlines	    https://newsapi.org
+    
+    API Ninjas	        Population data	    https://api-ninjas.com/api
 
-OpenWeather         API	Weather data    https://openweathermap.org/api
 
-NewsAPI	            News headlines	    https://newsapi.org
+🗂️ Message Format
 
-API Ninjas	        Population data	    https://api-ninjas.com/api
+To get info for a country, type:
+
+    /Japan
+    /France
+    /Brazil
+
+
+Invalid input produces helpful errors, for example:
+
+    /
+    ⚠️ Enter a country after '/'. Example: /Japan
+
+📸 Example Output
+"/South Korea"
+
+<img width="416" height="645" alt="image" src="https://github.com/user-attachments/assets/681ab947-1a4d-4a48-b3ea-b4c7c9a4b065" />
+
+🐛 Troubleshooting
+
+✔ Bot not responding?
+
+    Ensure TARGET_ROOM matches the exact Webex room name
+    
+    Verify your Webex Bot token has not expired
+    
+    Check internet connection or firewall restrictions
+
+✔ Some data missing?
+
+    APIs may occasionally return:
+    
+    404 (country not found)
+    
+    429 (rate limit exceeded)
+    
+    401 (API key invalid)
+
+The bot handles these gracefully and returns readable messages.
+
+✔ Population graph not showing?
+
+    Some countries lack historical population data (e.g., Antarctica).
+    The bot will report this instead of failing.
+
+🛠 Future Improvements (Optional)
+
+    Add support for regional abbreviations (/UK, /USA)
+    
+    Cache API results to reduce rate-limiting
+    
+    Add slash commands like /help or /about
+    
+    Add error logging to file
+
